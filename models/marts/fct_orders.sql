@@ -12,7 +12,8 @@
   config(
     materialized = 'incremental',
     unique_key   = 'order_id',
-    on_schema_change = 'sync_all_columns'
+    on_schema_change = 'sync_all_columns',
+    incremental_strategy = 'append'
   )
 }}
 
@@ -44,6 +45,7 @@ final as (
 
         -- Natural key
         o.order_id,
+        {{dbt_utils.generate_surrogate_key(['o.order_id'])}} as order_sk,
 
         -- Dimensions
         o.customer_id,

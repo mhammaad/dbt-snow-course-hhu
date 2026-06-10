@@ -10,13 +10,12 @@ sources:
     database: SNOWFLAKE_SAMPLE_DATA
     schema: TPCH_SF1
 
-    # ── Freshness monitoring ─────────────────────────────────────────────────
-    # Run:  dbt source freshness
     freshness:
-      warn_after:  {count: 7000, period: hour}
-      error_after: {count: 12000, period: hour}
+          warn_after: { count: 7000, period: hour }
+          error_after: { count: 12000, period: hour }
 
     tables:
+
       # ── ORDERS ─────────────────────────────────────────────────────────────
       - name: orders
         description: One row per customer order. Contains order header information.
@@ -25,6 +24,7 @@ sources:
           - name: O_ORDERKEY
             description: Unique order identifier (primary key).
             tests: [not_null, unique]
+
           - name: O_CUSTKEY
             description: Foreign key to CUSTOMER.C_CUSTKEY.
             tests:
@@ -32,24 +32,31 @@ sources:
               - relationships:
                   to: source('tpch', 'customer')
                   field: C_CUSTKEY
+
           - name: O_ORDERSTATUS
             description: Single-character order status code.
             tests:
               - not_null
               - accepted_values:
                   values: ['O', 'F', 'P']
+
           - name: O_TOTALPRICE
             description: Total price of the order in USD cents.
             tests: [not_null]
+
           - name: O_ORDERDATE
             description: Date the order was placed.
             tests: [not_null]
+
           - name: O_ORDERPRIORITY
             description: Order priority classification.
+
           - name: O_CLERK
             description: Identifier of the clerk who processed the order.
+
           - name: O_SHIPPRIORITY
             description: Ship priority code.
+
           - name: O_COMMENT
             description: Free-text comment on the order.
 
@@ -60,11 +67,14 @@ sources:
           - name: C_CUSTKEY
             description: Unique customer identifier (primary key).
             tests: [not_null, unique]
+
           - name: C_NAME
             description: Customer name.
             tests: [not_null]
+
           - name: C_ADDRESS
             description: Customer mailing address.
+
           - name: C_NATIONKEY
             description: Foreign key to NATION.N_NATIONKEY.
             tests:
@@ -72,12 +82,16 @@ sources:
               - relationships:
                   to: source('tpch', 'nation')
                   field: N_NATIONKEY
+
           - name: C_PHONE
             description: Customer phone number.
+
           - name: C_ACCTBAL
             description: Customer account balance.
+
           - name: C_MKTSEGMENT
             description: Market segment the customer belongs to.
+
           - name: C_COMMENT
             description: Free-text comment.
 
@@ -88,12 +102,15 @@ sources:
           - name: N_NATIONKEY
             description: Unique nation identifier (primary key).
             tests: [not_null, unique]
+
           - name: N_NAME
             description: Nation name.
             tests: [not_null]
+
           - name: N_REGIONKEY
             description: Foreign key to REGION.R_REGIONKEY.
             tests: [not_null]
+
           - name: N_COMMENT
             description: Free-text comment.
 
@@ -104,21 +121,29 @@ sources:
           - name: P_PARTKEY
             description: Unique part identifier (primary key).
             tests: [not_null, unique]
+
           - name: P_NAME
             description: Part name.
             tests: [not_null]
+
           - name: P_MFGR
             description: Manufacturer of the part.
+
           - name: P_BRAND
             description: Brand of the part.
+
           - name: P_TYPE
             description: Part type description.
+
           - name: P_SIZE
             description: Part size.
+
           - name: P_CONTAINER
             description: Packaging container type.
+
           - name: P_RETAILPRICE
             description: Retail price of the part.
+
           - name: P_COMMENT
             description: Free-text comment.
 
@@ -129,11 +154,14 @@ sources:
           - name: S_SUPPKEY
             description: Unique supplier identifier (primary key).
             tests: [not_null, unique]
+
           - name: S_NAME
             description: Supplier name.
             tests: [not_null]
+
           - name: S_ADDRESS
             description: Supplier mailing address.
+
           - name: S_NATIONKEY
             description: Foreign key to NATION.N_NATIONKEY.
             tests:
@@ -141,10 +169,13 @@ sources:
               - relationships:
                   to: source('tpch', 'nation')
                   field: N_NATIONKEY
+
           - name: S_PHONE
             description: Supplier phone number.
+
           - name: S_ACCTBAL
             description: Supplier account balance.
+
           - name: S_COMMENT
             description: Free-text comment.
 
@@ -155,8 +186,79 @@ sources:
           - name: R_REGIONKEY
             description: Unique region identifier (primary key).
             tests: [not_null, unique]
+
           - name: R_NAME
-            description: Region name (AFRICA, AMERICA, ASIA, EUROPE, MIDDLE EAST).
+            description: Region name.
             tests: [not_null]
+
           - name: R_COMMENT
+            description: Free-text comment.
+
+      # ── LINEITEM ────────────────────────────────────────────────────────────
+      - name: lineitem
+        description: >
+          One row per order line item. Each order can have multiple line items.
+          This is the most granular table in TPC-H.
+        columns:
+          - name: L_ORDERKEY
+            description: Foreign key to ORDERS.O_ORDERKEY.
+            tests:
+              - not_null
+              - relationships:
+                  to: source('tpch', 'orders')
+                  field: O_ORDERKEY
+
+          - name: L_PARTKEY
+            description: Foreign key to PART.P_PARTKEY.
+            tests:
+              - not_null
+
+          - name: L_SUPPKEY
+            description: Foreign key to SUPPLIER.S_SUPPKEY.
+            tests:
+              - not_null
+
+          - name: L_LINENUMBER
+            description: Position of this line within the order.
+            tests:
+              - not_null
+
+          - name: L_QUANTITY
+            description: Quantity of parts ordered.
+            tests:
+              - not_null
+
+          - name: L_EXTENDEDPRICE
+            description: Extended price (quantity × unit price).
+            tests:
+              - not_null
+
+          - name: L_DISCOUNT
+            description: Discount fraction.
+
+          - name: L_TAX
+            description: Tax fraction.
+
+          - name: L_RETURNFLAG
+            description: Return flag code.
+
+          - name: L_LINESTATUS
+            description: Line item status code.
+
+          - name: L_SHIPDATE
+            description: Date shipped.
+
+          - name: L_COMMITDATE
+            description: Commit date.
+
+          - name: L_RECEIPTDATE
+            description: Receipt date.
+
+          - name: L_SHIPINSTRUCT
+            description: Shipping instructions.
+
+          - name: L_SHIPMODE
+            description: Shipping mode.
+
+          - name: L_COMMENT
             description: Free-text comment.
